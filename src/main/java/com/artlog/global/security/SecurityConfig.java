@@ -1,5 +1,7 @@
 package com.artlog.global.security;
 
+import com.artlog.global.security.handler.CustomAccessDeniedHandler;
+import com.artlog.global.security.handler.CustomAuthenticationEntryPoint;
 import com.artlog.global.security.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +19,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -27,6 +31,11 @@ public class SecurityConfig {
 
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
 
                 .authorizeHttpRequests(auth -> auth
@@ -40,7 +49,6 @@ public class SecurityConfig {
                                 "/api/auth/signup",
                                 "/api/auth/login"
                         ).permitAll()
-
                         .anyRequest().authenticated()
                 )
 
