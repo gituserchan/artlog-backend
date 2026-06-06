@@ -1,7 +1,10 @@
 package com.artlog.global.security.jwt;
 
 import com.artlog.domain.user.entity.User;
+import com.artlog.global.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -54,6 +57,17 @@ public class JwtProvider {
             return true;
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    public ErrorCode getTokenErrorCode(String token) {
+        try{
+            parseClaims(token);
+            return null;
+        } catch (ExpiredJwtException e) {
+            return ErrorCode.EXPIRED_TOKEN;
+        }catch (JwtException | IllegalArgumentException e) {
+            return ErrorCode.INVALID_TOKEN;
         }
     }
 

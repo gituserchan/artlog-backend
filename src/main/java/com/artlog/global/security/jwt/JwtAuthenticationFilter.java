@@ -2,6 +2,7 @@ package com.artlog.global.security.jwt;
 
 import com.artlog.domain.user.entity.User;
 import com.artlog.domain.user.repository.UserRepository;
+import com.artlog.global.exception.ErrorCode;
 import com.artlog.global.security.user.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -20,6 +21,8 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+    public static final String TOKEN_EXCEPTION_ATTRIBUTE ="tokenException";
+
     private static final String AUTHORIZATION_HEADER = "Authorization";
     private static final String BEARER_PREFIX = "Bearer ";
 
@@ -34,22 +37,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
         String token = resolveToken(request);
 
-        if (token != null && jwtProvider.validateToken(token)) {
-            Long userId = jwtProvider.getUserId(token);
+        if (token != null) {
+            ErrorCode tokenErrorCode = jwtProvider.getTokenErrorCode(token);
 
-            User user = userRepository.findById(userId).orElse(null);
+            if (tokenErrorCode != null) {
+                request.setAttribute(TOKEN_EXCEPTION_ATTRIBUTE, tokenErrorCode);
+            } else {
+                Long userId = jwtProvider.getUserId(token);
 
-            if (user != null) {
-                CustomUserDetails userDetails = CustomUserDetails.from(user);
+                User user = userRepository.findById(userId).orElse(null);
 
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(
-                                userDetails,
-                                null,
-                                userDetails.getAuthorities()
-                        );
+                if (user != null) {
+                    CustomUserDetails userDetails = CustomUserDetails.from(user);
 
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities());
+
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                }
             }
         }
 
