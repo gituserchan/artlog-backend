@@ -53,4 +53,12 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long> {
             @Param("medium") String medium,
             @Param("exhibitionId") Long exhibitionId
     );
+
+    @Query("""
+        SELECT COUNT(a.id)
+        FROM Artwork a
+        JOIN a.exhibition e
+        WHERE e.user.id = :userId
+        """)
+    long countByUserId(@Param("userId") Long userId);
 }

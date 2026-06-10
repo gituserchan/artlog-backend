@@ -52,4 +52,26 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
             @Param("visitFrom") LocalDate visitFrom,
             @Param("visitTo") LocalDate visitTo
     );
+
+    long countByUserId(Long userId);
+
+    @Query("""
+        SELECT FUNCTION('DATE_FORMAT', e.visitDate, '%Y-%m'), COUNT(e.id)
+        FROM Exhibition e
+        WHERE e.user.id = :userId
+          AND e.visitDate IS NOT NULL
+        GROUP BY FUNCTION('DATE_FORMAT', e.visitDate, '%Y-%m')
+        ORDER BY FUNCTION('DATE_FORMAT', e.visitDate, '%Y-%m') ASC
+        """)
+    List<Object[]> countMonthlyVisits(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT e.museumName, COUNT(e.id)
+        FROM Exhibition e
+        WHERE e.user.id = :userId
+          AND e.museumName IS NOT NULL
+        GROUP BY e.museumName
+        ORDER BY COUNT(e.id) DESC
+        """)
+    List<Object[]> countTopMuseums(@Param("userId") Long userId);
 }
