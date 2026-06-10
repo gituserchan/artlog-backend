@@ -1,6 +1,7 @@
 package com.artlog.domain.exhibition.controller;
 
 import com.artlog.domain.exhibition.dto.request.ExhibitionCreateRequest;
+import com.artlog.domain.exhibition.dto.request.ExhibitionSearchRequest;
 import com.artlog.domain.exhibition.dto.request.ExhibitionUpdateRequest;
 import com.artlog.domain.exhibition.dto.response.ExhibitionResponse;
 import com.artlog.domain.exhibition.dto.response.ExhibitionSimpleResponse;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Tag(name = "Exhibition", description = "전시 기록 관련 API")
@@ -93,5 +95,31 @@ public class ExhibitionController {
         );
 
         return ApiResponse.success(SuccessCode.EXHIBITION_DELETE_SUCCESS);
+    }
+
+    @Operation(summary = "전시 기록 검색", description = "현재 로그인한 사용자의 전시 기록을 조건에 따라 검색합니다.")
+    @GetMapping("/search")
+    public ApiResponse<List<ExhibitionSimpleResponse>> searchExhibitions(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String museumName,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) LocalDate visitFrom,
+            @RequestParam(required = false) LocalDate visitTo
+    ) {
+        ExhibitionSearchRequest request = new ExhibitionSearchRequest(
+                keyword,
+                museumName,
+                location,
+                visitFrom,
+                visitTo
+        );
+
+        List<ExhibitionSimpleResponse> response = exhibitionService.searchExhibitions(
+                userDetails.getUserId(),
+                request
+        );
+
+        return ApiResponse.success(SuccessCode.EXHIBITION_LIST_SUCCESS, response);
     }
 }

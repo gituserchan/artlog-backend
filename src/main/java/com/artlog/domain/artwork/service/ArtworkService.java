@@ -1,6 +1,7 @@
 package com.artlog.domain.artwork.service;
 
 import com.artlog.domain.artwork.dto.request.ArtworkCreateRequest;
+import com.artlog.domain.artwork.dto.request.ArtworkSearchRequest;
 import com.artlog.domain.artwork.dto.request.ArtworkUpdateRequest;
 import com.artlog.domain.artwork.dto.response.ArtworkResponse;
 import com.artlog.domain.artwork.dto.response.ArtworkSimpleResponse;
@@ -121,5 +122,34 @@ public class ArtworkService {
     ) {
         return artworkRepository.findByIdAndExhibitionId(artworkId, exhibitionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ARTWORK_NOT_FOUND));
+    }
+
+    public List<ArtworkSimpleResponse> searchArtworks(
+            Long userId,
+            ArtworkSearchRequest request
+    ) {
+        if (request.exhibitionId() != null) {
+            getMyExhibition(userId, request.exhibitionId());
+        }
+
+        return artworkRepository.searchArtworks(
+                        userId,
+                        normalize(request.keyword()),
+                        normalize(request.artistName()),
+                        normalize(request.productionYear()),
+                        normalize(request.medium()),
+                        request.exhibitionId()
+                )
+                .stream()
+                .map(ArtworkSimpleResponse::from)
+                .toList();
+    }
+
+    private String normalize(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
     }
 }

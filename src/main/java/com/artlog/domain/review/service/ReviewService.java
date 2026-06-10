@@ -6,6 +6,7 @@ import com.artlog.domain.exhibition.entity.Exhibition;
 import com.artlog.domain.exhibition.repository.ExhibitionRepository;
 import com.artlog.domain.review.dto.request.ArtworkReviewCreateRequest;
 import com.artlog.domain.review.dto.request.ExhibitionReviewCreateRequest;
+import com.artlog.domain.review.dto.request.ReviewSearchRequest;
 import com.artlog.domain.review.dto.request.ReviewUpdateRequest;
 import com.artlog.domain.review.dto.response.ReviewResponse;
 import com.artlog.domain.review.dto.response.ReviewSimpleResponse;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -226,5 +228,35 @@ public class ReviewService {
         }
 
         return wantToRevisit;
+    }
+
+    public List<ReviewSimpleResponse> searchReviews(
+            Long userId,
+            ReviewSearchRequest request
+    ) {
+        return reviewRepository.searchReviews(
+                        userId,
+                        normalize(request.keyword()),
+                        request.reviewType(),
+                        request.visibility(),
+                        request.minRating(),
+                        request.maxRating(),
+                        normalize(request.emotionTag()),
+                        normalize(request.keywords()),
+                        request.wantToRevisit(),
+                        request.createdFrom() == null ? null : request.createdFrom().atStartOfDay(),
+                        request.createdTo() == null ? null : request.createdTo().atTime(LocalTime.MAX)
+                )
+                .stream()
+                .map(ReviewSimpleResponse::from)
+                .toList();
+    }
+
+    private String normalize(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
     }
 }
