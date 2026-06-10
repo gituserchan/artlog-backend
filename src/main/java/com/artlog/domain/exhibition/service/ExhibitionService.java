@@ -13,6 +13,7 @@ import com.artlog.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.artlog.domain.exhibition.dto.request.ExhibitionSearchRequest;
 
 import java.util.List;
 
@@ -106,5 +107,30 @@ public class ExhibitionService {
     ){
         return exhibitionRepository.findByIdAndUserId(exhibitionId, userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.EXHIBITION_NOT_FOUND));
+    }
+
+    public List<ExhibitionSimpleResponse> searchExhibitions(
+            Long userId,
+            ExhibitionSearchRequest request
+    ) {
+        return exhibitionRepository.searchExhibitions(
+                        userId,
+                        normalize(request.keyword()),
+                        normalize(request.museumName()),
+                        normalize(request.location()),
+                        request.visitFrom(),
+                        request.visitTo()
+                )
+                .stream()
+                .map(ExhibitionSimpleResponse::from)
+                .toList();
+    }
+
+    private String normalize(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+
+        return value.trim();
     }
 }

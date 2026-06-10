@@ -2,6 +2,7 @@ package com.artlog.domain.review.controller;
 
 import com.artlog.domain.review.dto.request.ArtworkReviewCreateRequest;
 import com.artlog.domain.review.dto.request.ExhibitionReviewCreateRequest;
+import com.artlog.domain.review.dto.request.ReviewSearchRequest;
 import com.artlog.domain.review.dto.request.ReviewUpdateRequest;
 import com.artlog.domain.review.dto.response.ReviewResponse;
 import com.artlog.domain.review.dto.response.ReviewSimpleResponse;
@@ -155,5 +156,19 @@ public class ReviewController {
         );
 
         return ApiResponse.success(SuccessCode.REVIEW_DELETE_SUCCESS);
+    }
+
+    @Operation(summary = "감상 기록 검색", description = "현재 로그인한 사용자의 감상 기록을 조건에 따라 검색합니다.")
+    @GetMapping("/reviews/search")
+    public ApiResponse<List<ReviewSimpleResponse>> searchReviews(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @ModelAttribute ReviewSearchRequest request
+    ) {
+        List<ReviewSimpleResponse> response = reviewService.searchReviews(
+                userDetails.getUserId(),
+                request
+        );
+
+        return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
     }
 }
