@@ -94,4 +94,35 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("createdFrom") LocalDateTime createdFrom,
             @Param("createdTo") LocalDateTime createdTo
     );
+
+    long countByUserId(Long userId);
+
+    @Query("""
+        SELECT AVG(r.rating)
+        FROM Review r
+        WHERE r.user.id = :userId
+          AND r.rating IS NOT NULL
+        """)
+    Double averageRatingByUserId(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT r.rating, COUNT(r.id)
+        FROM Review r
+        WHERE r.user.id = :userId
+          AND r.rating IS NOT NULL
+        GROUP BY r.rating
+        ORDER BY r.rating DESC
+        """)
+    List<Object[]> countRatingDistribution(@Param("userId") Long userId);
+
+    @Query("""
+        SELECT r.emotionTag, COUNT(r.id)
+        FROM Review r
+        WHERE r.user.id = :userId
+          AND r.emotionTag IS NOT NULL
+          AND r.emotionTag <> ''
+        GROUP BY r.emotionTag
+        ORDER BY COUNT(r.id) DESC
+        """)
+    List<Object[]> countTopEmotionTags(@Param("userId") Long userId);
 }

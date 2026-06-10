@@ -40,7 +40,15 @@ public enum SuccessCode {
     REVIEW_LIST_SUCCESS(HttpStatus.OK, "감상 기록 목록 조회가 완료되었습니다."),
     REVIEW_DETAIL_SUCCESS(HttpStatus.OK, "감상 기록 상세 조회가 완료되었습니다."),
     REVIEW_UPDATE_SUCCESS(HttpStatus.OK, "감상 기록이 수정되었습니다."),
-    REVIEW_DELETE_SUCCESS(HttpStatus.OK, "감상 기록이 삭제되었습니다.");
+    REVIEW_DELETE_SUCCESS(HttpStatus.OK, "감상 기록이 삭제되었습니다."),
+
+    // Statics
+    // Statistics
+    STATISTICS_SUMMARY_SUCCESS(HttpStatus.OK, "통계 요약 조회가 완료되었습니다."),
+    MONTHLY_VISITS_SUCCESS(HttpStatus.OK, "월별 관람 통계 조회가 완료되었습니다."),
+    TOP_MUSEUMS_SUCCESS(HttpStatus.OK, "자주 방문한 미술관 통계 조회가 완료되었습니다."),
+    RATING_DISTRIBUTION_SUCCESS(HttpStatus.OK, "평점 분포 통계 조회가 완료되었습니다."),
+    TOP_EMOTION_TAGS_SUCCESS(HttpStatus.OK, "감정 태그 통계 조회가 완료되었습니다.");
 
     private final HttpStatus status;
     private final String message;
