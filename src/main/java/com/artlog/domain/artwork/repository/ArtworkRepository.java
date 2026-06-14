@@ -1,16 +1,17 @@
 package com.artlog.domain.artwork.repository;
 
 import com.artlog.domain.artwork.entity.Artwork;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface ArtworkRepository extends JpaRepository<Artwork, Long> {
 
-    List<Artwork> findAllByExhibitionIdOrderByCreatedAtDesc(Long exhibitionId);
+    Page<Artwork> findAllByExhibitionId(Long exhibitionId, Pageable pageable);
 
     Optional<Artwork> findByIdAndExhibitionId(Long artworkId, Long exhibitionId);
 
@@ -43,15 +44,15 @@ public interface ArtworkRepository extends JpaRepository<Artwork, Long> {
                     :medium IS NULL
                     OR a.medium LIKE CONCAT('%', :medium, '%')
                   )
-            ORDER BY a.createdAt DESC
             """)
-    List<Artwork> searchArtworks(
+    Page<Artwork> searchArtworks(
             @Param("userId") Long userId,
             @Param("keyword") String keyword,
             @Param("artistName") String artistName,
             @Param("productionYear") String productionYear,
             @Param("medium") String medium,
-            @Param("exhibitionId") Long exhibitionId
+            @Param("exhibitionId") Long exhibitionId,
+            Pageable pageable
     );
 
     @Query("""

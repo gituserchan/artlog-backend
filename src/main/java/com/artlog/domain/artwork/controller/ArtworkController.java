@@ -6,16 +6,19 @@ import com.artlog.domain.artwork.dto.response.ArtworkResponse;
 import com.artlog.domain.artwork.dto.response.ArtworkSimpleResponse;
 import com.artlog.domain.artwork.service.ArtworkService;
 import com.artlog.global.response.ApiResponse;
+import com.artlog.global.response.PageResponse;
 import com.artlog.global.response.SuccessCode;
 import com.artlog.global.security.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Artwork", description = "작품 기록 관련 API")
 @RestController
@@ -41,15 +44,18 @@ public class ArtworkController {
         return ApiResponse.success(SuccessCode.ARTWORK_CREATE_SUCCESS, response);
     }
 
-    @Operation(summary = "작품 기록 목록 조회", description = "현재 로그인한 사용자의 특정 전시에 등록된 작품 목록을 조회합니다.")
+    @Operation(summary = "작품 기록 목록 조회", description = "현재 로그인한 사용자의 특정 전시에 등록된 작품 목록을 페이징하여 조회합니다.")
     @GetMapping
-    public ApiResponse<List<ArtworkSimpleResponse>> getArtworks(
+    public ApiResponse<PageResponse<ArtworkSimpleResponse>> getArtworks(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long exhibitionId
+            @PathVariable Long exhibitionId,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<ArtworkSimpleResponse> response = artworkService.getArtworks(
+        PageResponse<ArtworkSimpleResponse> response = artworkService.getArtworks(
                 userDetails.getUserId(),
-                exhibitionId
+                exhibitionId,
+                pageable
         );
 
         return ApiResponse.success(SuccessCode.ARTWORK_LIST_SUCCESS, response);

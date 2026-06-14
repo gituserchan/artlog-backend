@@ -7,17 +7,21 @@ import com.artlog.domain.exhibition.dto.response.ExhibitionResponse;
 import com.artlog.domain.exhibition.dto.response.ExhibitionSimpleResponse;
 import com.artlog.domain.exhibition.service.ExhibitionService;
 import com.artlog.global.response.ApiResponse;
+import com.artlog.global.response.PageResponse;
 import com.artlog.global.response.SuccessCode;
 import com.artlog.global.security.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 
 @Tag(name = "Exhibition", description = "전시 기록 관련 API")
 @RestController
@@ -41,13 +45,16 @@ public class ExhibitionController {
         return ApiResponse.success(SuccessCode.EXHIBITION_CREATE_SUCCESS, response);
     }
 
-    @Operation(summary = "내 전시 기록 목록 조회", description = "현재 로그인한 사용자의 전시 기록 목록을 조회합니다.")
+    @Operation(summary = "내 전시 기록 목록 조회", description = "현재 로그인한 사용자의 전시 기록 목록을 페이징하여 조회합니다.")
     @GetMapping
-    public ApiResponse<List<ExhibitionSimpleResponse>> getMyExhibitions(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+    public ApiResponse<PageResponse<ExhibitionSimpleResponse>> getMyExhibitions(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "visitDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<ExhibitionSimpleResponse> response = exhibitionService.getMyExhibitions(
-                userDetails.getUserId()
+        PageResponse<ExhibitionSimpleResponse> response = exhibitionService.getMyExhibitions(
+                userDetails.getUserId(),
+                pageable
         );
 
         return ApiResponse.success(SuccessCode.EXHIBITION_LIST_SUCCESS, response);
@@ -97,15 +104,17 @@ public class ExhibitionController {
         return ApiResponse.success(SuccessCode.EXHIBITION_DELETE_SUCCESS);
     }
 
-    @Operation(summary = "전시 기록 검색", description = "현재 로그인한 사용자의 전시 기록을 조건에 따라 검색합니다.")
+    @Operation(summary = "전시 기록 검색", description = "현재 로그인한 사용자의 전시 기록을 조건에 따라 페이징하여 검색합니다.")
     @GetMapping("/search")
-    public ApiResponse<List<ExhibitionSimpleResponse>> searchExhibitions(
+    public ApiResponse<PageResponse<ExhibitionSimpleResponse>> searchExhibitions(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String museumName,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) LocalDate visitFrom,
-            @RequestParam(required = false) LocalDate visitTo
+            @RequestParam(required = false) LocalDate visitTo,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "visitDate", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         ExhibitionSearchRequest request = new ExhibitionSearchRequest(
                 keyword,
@@ -115,9 +124,10 @@ public class ExhibitionController {
                 visitTo
         );
 
-        List<ExhibitionSimpleResponse> response = exhibitionService.searchExhibitions(
+        PageResponse<ExhibitionSimpleResponse> response = exhibitionService.searchExhibitions(
                 userDetails.getUserId(),
-                request
+                request,
+                pageable
         );
 
         return ApiResponse.success(SuccessCode.EXHIBITION_LIST_SUCCESS, response);

@@ -8,7 +8,9 @@ import com.artlog.domain.review.dto.response.ReviewResponse;
 import com.artlog.domain.review.dto.response.ReviewSimpleResponse;
 import com.artlog.domain.review.service.ReviewService;
 import com.artlog.domain.review.type.ReviewType;
+import com.artlog.domain.review.type.ReviewVisibility;
 import com.artlog.global.response.ApiResponse;
+import com.artlog.global.response.PageResponse;
 import com.artlog.global.response.SuccessCode;
 import com.artlog.global.security.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,10 +18,14 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @Tag(name = "Review", description = "감상 기록 관련 API")
 @RestController
@@ -63,52 +69,94 @@ public class ReviewController {
         return ApiResponse.success(SuccessCode.REVIEW_CREATE_SUCCESS, response);
     }
 
-    @Operation(summary = "내 감상 기록 전체 조회", description = "현재 로그인한 사용자의 모든 감상 기록을 조회합니다. reviewType을 넘기면 전시/작품 감상만 필터링할 수 있습니다.")
+    @Operation(summary = "내 감상 기록 전체 조회", description = "현재 로그인한 사용자의 모든 감상 기록을 페이징하여 조회합니다. reviewType을 넘기면 전시/작품 감상만 필터링할 수 있습니다.")
     @GetMapping("/reviews")
-    public ApiResponse<List<ReviewSimpleResponse>> getMyReviews(
+    public ApiResponse<PageResponse<ReviewSimpleResponse>> getMyReviews(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Parameter(description = "감상 유형, EXHIBITION 또는 ARTWORK")
-            @RequestParam(required = false) ReviewType reviewType
+            @RequestParam(required = false) ReviewType reviewType,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<ReviewSimpleResponse> response;
-
-        if (reviewType == null) {
-            response = reviewService.getMyReviews(userDetails.getUserId());
-        } else {
-            response = reviewService.getMyReviewsByType(
-                    userDetails.getUserId(),
-                    reviewType
-            );
-        }
-
-        return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
-    }
-
-    @Operation(summary = "전시별 감상 기록 조회", description = "현재 로그인한 사용자의 특정 전시에 연결된 감상 기록을 조회합니다.")
-    @GetMapping("/exhibitions/{exhibitionId}/reviews")
-    public ApiResponse<List<ReviewSimpleResponse>> getReviewsByExhibition(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Long exhibitionId
-    ) {
-        List<ReviewSimpleResponse> response = reviewService.getReviewsByExhibition(
+        PageResponse<ReviewSimpleResponse> response = reviewService.getMyReviews(
                 userDetails.getUserId(),
-                exhibitionId
+                reviewType,
+                pageable
         );
 
         return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
     }
 
-    @Operation(summary = "작품별 감상 기록 조회", description = "현재 로그인한 사용자의 특정 작품에 연결된 감상 기록을 조회합니다.")
-    @GetMapping("/exhibitions/{exhibitionId}/artworks/{artworkId}/reviews")
-    public ApiResponse<List<ReviewSimpleResponse>> getReviewsByArtwork(
+    @Operation(summary = "전시별 감상 기록 조회", description = "현재 로그인한 사용자의 특정 전시에 연결된 감상 기록을 페이징하여 조회합니다.")
+    @GetMapping("/exhibitions/{exhibitionId}/reviews")
+    public ApiResponse<PageResponse<ReviewSimpleResponse>> getReviewsByExhibition(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long exhibitionId,
-            @PathVariable Long artworkId
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        List<ReviewSimpleResponse> response = reviewService.getReviewsByArtwork(
+        PageResponse<ReviewSimpleResponse> response = reviewService.getReviewsByExhibition(
                 userDetails.getUserId(),
                 exhibitionId,
-                artworkId
+                pageable
+        );
+
+        return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
+    }
+
+    @Operation(summary = "작품별 감상 기록 조회", description = "현재 로그인한 사용자의 특정 작품에 연결된 감상 기록을 페이징하여 조회합니다.")
+    @GetMapping("/exhibitions/{exhibitionId}/artworks/{artworkId}/reviews")
+    public ApiResponse<PageResponse<ReviewSimpleResponse>> getReviewsByArtwork(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long exhibitionId,
+            @PathVariable Long artworkId,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        PageResponse<ReviewSimpleResponse> response = reviewService.getReviewsByArtwork(
+                userDetails.getUserId(),
+                exhibitionId,
+                artworkId,
+                pageable
+        );
+
+        return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
+    }
+
+    @Operation(summary = "감상 기록 검색", description = "현재 로그인한 사용자의 감상 기록을 조건에 따라 페이징하여 검색합니다.")
+    @GetMapping("/reviews/search")
+    public ApiResponse<PageResponse<ReviewSimpleResponse>> searchReviews(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) ReviewType reviewType,
+            @RequestParam(required = false) ReviewVisibility visibility,
+            @RequestParam(required = false) Integer minRating,
+            @RequestParam(required = false) Integer maxRating,
+            @RequestParam(required = false) String emotionTag,
+            @RequestParam(required = false) String keywords,
+            @RequestParam(required = false) Boolean wantToRevisit,
+            @RequestParam(required = false) LocalDate createdFrom,
+            @RequestParam(required = false) LocalDate createdTo,
+            @ParameterObject
+            @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        ReviewSearchRequest request = new ReviewSearchRequest(
+                keyword,
+                reviewType,
+                visibility,
+                minRating,
+                maxRating,
+                emotionTag,
+                keywords,
+                wantToRevisit,
+                createdFrom,
+                createdTo
+        );
+
+        PageResponse<ReviewSimpleResponse> response = reviewService.searchReviews(
+                userDetails.getUserId(),
+                request,
+                pageable
         );
 
         return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
@@ -156,19 +204,5 @@ public class ReviewController {
         );
 
         return ApiResponse.success(SuccessCode.REVIEW_DELETE_SUCCESS);
-    }
-
-    @Operation(summary = "감상 기록 검색", description = "현재 로그인한 사용자의 감상 기록을 조건에 따라 검색합니다.")
-    @GetMapping("/reviews/search")
-    public ApiResponse<List<ReviewSimpleResponse>> searchReviews(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @ModelAttribute ReviewSearchRequest request
-    ) {
-        List<ReviewSimpleResponse> response = reviewService.searchReviews(
-                userDetails.getUserId(),
-                request
-        );
-
-        return ApiResponse.success(SuccessCode.REVIEW_LIST_SUCCESS, response);
     }
 }

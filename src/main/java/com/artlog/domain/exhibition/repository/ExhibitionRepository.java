@@ -1,6 +1,8 @@
 package com.artlog.domain.exhibition.repository;
 
 import com.artlog.domain.exhibition.entity.Exhibition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,8 @@ import java.util.Optional;
 public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
 
     List<Exhibition> findAllByUserIdOrderByVisitDateDescCreatedAtDesc(Long userId);
+
+    Page<Exhibition> findAllByUserId(Long userId, Pageable pageable);
 
     Optional<Exhibition> findByIdAndUserId(Long exhibitionId, Long userId);
 
@@ -42,15 +46,15 @@ public interface ExhibitionRepository extends JpaRepository<Exhibition, Long> {
                 :visitTo IS NULL
                 OR e.visitDate <= :visitTo
               )
-        ORDER BY e.visitDate DESC, e.createdAt DESC
         """)
-    List<Exhibition> searchExhibitions(
+    Page<Exhibition> searchExhibitions(
             @Param("userId") Long userId,
             @Param("keyword") String keyword,
             @Param("museumName") String museumName,
             @Param("location") String location,
             @Param("visitFrom") LocalDate visitFrom,
-            @Param("visitTo") LocalDate visitTo
+            @Param("visitTo") LocalDate visitTo,
+            Pageable pageable
     );
 
     long countByUserId(Long userId);

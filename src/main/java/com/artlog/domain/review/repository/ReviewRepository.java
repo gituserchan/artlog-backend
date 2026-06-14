@@ -3,6 +3,8 @@ package com.artlog.domain.review.repository;
 import com.artlog.domain.review.entity.Review;
 import com.artlog.domain.review.type.ReviewType;
 import com.artlog.domain.review.type.ReviewVisibility;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -13,21 +15,24 @@ import java.util.Optional;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    List<Review> findAllByUserIdOrderByCreatedAtDesc(Long userId);
+    Page<Review> findAllByUserId(Long userId, Pageable pageable);
 
-    List<Review> findAllByUserIdAndReviewTypeOrderByCreatedAtDesc(
+    Page<Review> findAllByUserIdAndReviewType(
             Long userId,
-            ReviewType reviewType
+            ReviewType reviewType,
+            Pageable pageable
     );
 
-    List<Review> findAllByExhibitionIdAndUserIdOrderByCreatedAtDesc(
+    Page<Review> findAllByExhibitionIdAndUserId(
             Long exhibitionId,
-            Long userId
+            Long userId,
+            Pageable pageable
     );
 
-    List<Review> findAllByArtworkIdAndUserIdOrderByCreatedAtDesc(
+    Page<Review> findAllByArtworkIdAndUserId(
             Long artworkId,
-            Long userId
+            Long userId,
+            Pageable pageable
     );
 
     Optional<Review> findByIdAndUserId(Long reviewId, Long userId);
@@ -79,9 +84,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
                     :createdTo IS NULL
                     OR r.createdAt <= :createdTo
                   )
-            ORDER BY r.createdAt DESC
             """)
-    List<Review> searchReviews(
+    Page<Review> searchReviews(
             @Param("userId") Long userId,
             @Param("keyword") String keyword,
             @Param("reviewType") ReviewType reviewType,
@@ -92,7 +96,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("keywords") String keywords,
             @Param("wantToRevisit") Boolean wantToRevisit,
             @Param("createdFrom") LocalDateTime createdFrom,
-            @Param("createdTo") LocalDateTime createdTo
+            @Param("createdTo") LocalDateTime createdTo,
+            Pageable pageable
     );
 
     long countByUserId(Long userId);

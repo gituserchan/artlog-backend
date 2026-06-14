@@ -1,6 +1,7 @@
 package com.artlog.domain.exhibition.service;
 
 import com.artlog.domain.exhibition.dto.request.ExhibitionCreateRequest;
+import com.artlog.domain.exhibition.dto.request.ExhibitionSearchRequest;
 import com.artlog.domain.exhibition.dto.request.ExhibitionUpdateRequest;
 import com.artlog.domain.exhibition.dto.response.ExhibitionResponse;
 import com.artlog.domain.exhibition.dto.response.ExhibitionSimpleResponse;
@@ -10,25 +11,26 @@ import com.artlog.domain.user.entity.User;
 import com.artlog.domain.user.repository.UserRepository;
 import com.artlog.global.exception.BusinessException;
 import com.artlog.global.exception.ErrorCode;
+import com.artlog.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.artlog.domain.exhibition.dto.request.ExhibitionSearchRequest;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ExhibitionService {
+
     private final ExhibitionRepository exhibitionRepository;
     private final UserRepository userRepository;
 
     @Transactional
     public ExhibitionResponse createExhibition(
             Long userId,
-            ExhibitionCreateRequest request)
-    {
+            ExhibitionCreateRequest request
+    ) {
         User user = getUser(userId);
 
         Exhibition exhibition = Exhibition.builder()
@@ -48,18 +50,21 @@ public class ExhibitionService {
         return ExhibitionResponse.from(savedExhibition);
     }
 
-    public List<ExhibitionSimpleResponse> getMyExhibitions(Long userId) {
-        return exhibitionRepository.findAllByUserIdOrderByVisitDateDescCreatedAtDesc(userId)
-                .stream()
-                .map(ExhibitionSimpleResponse::from)
-                .toList();
+    public PageResponse<ExhibitionSimpleResponse> getMyExhibitions(
+            Long userId,
+            Pageable pageable
+    ) {
+        Page<ExhibitionSimpleResponse> page = exhibitionRepository.findAllByUserId(userId, pageable)
+                .map(ExhibitionSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
     public ExhibitionResponse getExhibition(
             Long userId,
             Long exhibitionId
     ) {
-        Exhibition exhibition = getMyExhibitions(userId, exhibitionId);
+        Exhibition exhibition = getMyExhibition(userId, exhibitionId);
 
         return ExhibitionResponse.from(exhibition);
     }
@@ -69,8 +74,8 @@ public class ExhibitionService {
             Long userId,
             Long exhibitionId,
             ExhibitionUpdateRequest request
-    ){
-        Exhibition exhibition = getMyExhibitions(userId, exhibitionId);
+    ) {
+        Exhibition exhibition = getMyExhibition(userId, exhibitionId);
 
         exhibition.update(
                 request.title(),
@@ -81,7 +86,6 @@ public class ExhibitionService {
                 request.visitDate(),
                 request.posterImageUrl(),
                 request.memo()
-
         );
 
         return ExhibitionResponse.from(exhibition);
@@ -91,9 +95,29 @@ public class ExhibitionService {
     public void deleteExhibition(
             Long userId,
             Long exhibitionId
-    ){
-        Exhibition exhibition = getMyExhibitions(userId, exhibitionId);
+    ) {
+        Exhibition exhibition = getMyExhibition(userId, exhibitionId);
+
         exhibitionRepository.delete(exhibition);
+    }
+
+    public PageResponse<ExhibitionSimpleResponse> searchExhibitions(
+            Long userId,
+            ExhibitionSearchRequest request,
+            Pageable pageable
+    ) {
+        Page<ExhibitionSimpleResponse> page = exhibitionRepository.searchExhibitions(
+                        userId,
+                        normalize(request.keyword()),
+                        normalize(request.museumName()),
+                        normalize(request.location()),
+                        request.visitFrom(),
+                        request.visitTo(),
+                        pageable
+                )
+                .map(ExhibitionSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
     private User getUser(Long userId) {
@@ -101,29 +125,12 @@ public class ExhibitionService {
                 .orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
     }
 
-    private Exhibition getMyExhibitions(
+    private Exhibition getMyExhibition(
             Long userId,
             Long exhibitionId
-    ){
+    ) {
         return exhibitionRepository.findByIdAndUserId(exhibitionId, userId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.EXHIBITION_NOT_FOUND));
-    }
-
-    public List<ExhibitionSimpleResponse> searchExhibitions(
-            Long userId,
-            ExhibitionSearchRequest request
-    ) {
-        return exhibitionRepository.searchExhibitions(
-                        userId,
-                        normalize(request.keyword()),
-                        normalize(request.museumName()),
-                        normalize(request.location()),
-                        request.visitFrom(),
-                        request.visitTo()
-                )
-                .stream()
-                .map(ExhibitionSimpleResponse::from)
-                .toList();
     }
 
     private String normalize(String value) {
