@@ -32,7 +32,12 @@ public enum ErrorCode {
     ARTWORK_NOT_FOUND(HttpStatus.NOT_FOUND, "ARTWORK_404", "작품 기록을 찾을 수 없습니다."),
 
     // Review
-    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW_404", "감상 기록을 찾을 수 없습니다.");
+    REVIEW_NOT_FOUND(HttpStatus.NOT_FOUND, "REVIEW_404", "감상 기록을 찾을 수 없습니다."),
+
+    // File
+    EMPTY_FILE(HttpStatus.BAD_REQUEST, "FILE_400_1", "업로드할 파일이 비어 있습니다."),
+    INVALID_IMAGE_FILE(HttpStatus.BAD_REQUEST, "FILE_400_2", "이미지 파일만 업로드할 수 있습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE_500", "파일 업로드에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
