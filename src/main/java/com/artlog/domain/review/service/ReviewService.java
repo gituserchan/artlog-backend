@@ -18,12 +18,14 @@ import com.artlog.domain.user.entity.User;
 import com.artlog.domain.user.repository.UserRepository;
 import com.artlog.global.exception.BusinessException;
 import com.artlog.global.exception.ErrorCode;
+import com.artlog.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -95,53 +97,62 @@ public class ReviewService {
         return ReviewResponse.from(savedReview);
     }
 
-    public List<ReviewSimpleResponse> getMyReviews(Long userId) {
-        return reviewRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
-                .stream()
-                .map(ReviewSimpleResponse::from)
-                .toList();
-    }
-
-    public List<ReviewSimpleResponse> getMyReviewsByType(
+    public PageResponse<ReviewSimpleResponse> getMyReviews(
             Long userId,
-            ReviewType reviewType
+            ReviewType reviewType,
+            Pageable pageable
     ) {
-        return reviewRepository.findAllByUserIdAndReviewTypeOrderByCreatedAtDesc(userId, reviewType)
-                .stream()
-                .map(ReviewSimpleResponse::from)
-                .toList();
+        Page<Review> reviews;
+
+        if (reviewType == null) {
+            reviews = reviewRepository.findAllByUserId(userId, pageable);
+        } else {
+            reviews = reviewRepository.findAllByUserIdAndReviewType(
+                    userId,
+                    reviewType,
+                    pageable
+            );
+        }
+
+        Page<ReviewSimpleResponse> page = reviews.map(ReviewSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
-    public List<ReviewSimpleResponse> getReviewsByExhibition(
+    public PageResponse<ReviewSimpleResponse> getReviewsByExhibition(
             Long userId,
-            Long exhibitionId
+            Long exhibitionId,
+            Pageable pageable
     ) {
         getMyExhibition(userId, exhibitionId);
 
-        return reviewRepository.findAllByExhibitionIdAndUserIdOrderByCreatedAtDesc(
+        Page<ReviewSimpleResponse> page = reviewRepository.findAllByExhibitionIdAndUserId(
                         exhibitionId,
-                        userId
+                        userId,
+                        pageable
                 )
-                .stream()
-                .map(ReviewSimpleResponse::from)
-                .toList();
+                .map(ReviewSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
-    public List<ReviewSimpleResponse> getReviewsByArtwork(
+    public PageResponse<ReviewSimpleResponse> getReviewsByArtwork(
             Long userId,
             Long exhibitionId,
-            Long artworkId
+            Long artworkId,
+            Pageable pageable
     ) {
         getMyExhibition(userId, exhibitionId);
         getArtworkInExhibition(exhibitionId, artworkId);
 
-        return reviewRepository.findAllByArtworkIdAndUserIdOrderByCreatedAtDesc(
+        Page<ReviewSimpleResponse> page = reviewRepository.findAllByArtworkIdAndUserId(
                         artworkId,
-                        userId
+                        userId,
+                        pageable
                 )
-                .stream()
-                .map(ReviewSimpleResponse::from)
-                .toList();
+                .map(ReviewSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
     public ReviewResponse getReview(
@@ -183,6 +194,30 @@ public class ReviewService {
         Review review = getMyReview(userId, reviewId);
 
         reviewRepository.delete(review);
+    }
+
+    public PageResponse<ReviewSimpleResponse> searchReviews(
+            Long userId,
+            ReviewSearchRequest request,
+            Pageable pageable
+    ) {
+        Page<ReviewSimpleResponse> page = reviewRepository.searchReviews(
+                        userId,
+                        normalize(request.keyword()),
+                        request.reviewType(),
+                        request.visibility(),
+                        request.minRating(),
+                        request.maxRating(),
+                        normalize(request.emotionTag()),
+                        normalize(request.keywords()),
+                        request.wantToRevisit(),
+                        request.createdFrom() == null ? null : request.createdFrom().atStartOfDay(),
+                        request.createdTo() == null ? null : request.createdTo().atTime(LocalTime.MAX),
+                        pageable
+                )
+                .map(ReviewSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
     private User getUser(Long userId) {
@@ -228,28 +263,6 @@ public class ReviewService {
         }
 
         return wantToRevisit;
-    }
-
-    public List<ReviewSimpleResponse> searchReviews(
-            Long userId,
-            ReviewSearchRequest request
-    ) {
-        return reviewRepository.searchReviews(
-                        userId,
-                        normalize(request.keyword()),
-                        request.reviewType(),
-                        request.visibility(),
-                        request.minRating(),
-                        request.maxRating(),
-                        normalize(request.emotionTag()),
-                        normalize(request.keywords()),
-                        request.wantToRevisit(),
-                        request.createdFrom() == null ? null : request.createdFrom().atStartOfDay(),
-                        request.createdTo() == null ? null : request.createdTo().atTime(LocalTime.MAX)
-                )
-                .stream()
-                .map(ReviewSimpleResponse::from)
-                .toList();
     }
 
     private String normalize(String value) {

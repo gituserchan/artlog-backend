@@ -11,11 +11,12 @@ import com.artlog.domain.exhibition.entity.Exhibition;
 import com.artlog.domain.exhibition.repository.ExhibitionRepository;
 import com.artlog.global.exception.BusinessException;
 import com.artlog.global.exception.ErrorCode;
+import com.artlog.global.response.PageResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -48,16 +49,20 @@ public class ArtworkService {
         return ArtworkResponse.from(savedArtwork);
     }
 
-    public List<ArtworkSimpleResponse> getArtworks(
+    public PageResponse<ArtworkSimpleResponse> getArtworks(
             Long userId,
-            Long exhibitionId
+            Long exhibitionId,
+            Pageable pageable
     ) {
         getMyExhibition(userId, exhibitionId);
 
-        return artworkRepository.findAllByExhibitionIdOrderByCreatedAtDesc(exhibitionId)
-                .stream()
-                .map(ArtworkSimpleResponse::from)
-                .toList();
+        Page<ArtworkSimpleResponse> page = artworkRepository.findAllByExhibitionId(
+                        exhibitionId,
+                        pageable
+                )
+                .map(ArtworkSimpleResponse::from);
+
+        return PageResponse.from(page);
     }
 
     public ArtworkResponse getArtwork(
@@ -108,6 +113,29 @@ public class ArtworkService {
         artworkRepository.delete(artwork);
     }
 
+    public PageResponse<ArtworkSimpleResponse> searchArtworks(
+            Long userId,
+            ArtworkSearchRequest request,
+            Pageable pageable
+    ) {
+        if (request.exhibitionId() != null) {
+            getMyExhibition(userId, request.exhibitionId());
+        }
+
+        Page<ArtworkSimpleResponse> page = artworkRepository.searchArtworks(
+                        userId,
+                        normalize(request.keyword()),
+                        normalize(request.artistName()),
+                        normalize(request.productionYear()),
+                        normalize(request.medium()),
+                        request.exhibitionId(),
+                        pageable
+                )
+                .map(ArtworkSimpleResponse::from);
+
+        return PageResponse.from(page);
+    }
+
     private Exhibition getMyExhibition(
             Long userId,
             Long exhibitionId
@@ -122,27 +150,6 @@ public class ArtworkService {
     ) {
         return artworkRepository.findByIdAndExhibitionId(artworkId, exhibitionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.ARTWORK_NOT_FOUND));
-    }
-
-    public List<ArtworkSimpleResponse> searchArtworks(
-            Long userId,
-            ArtworkSearchRequest request
-    ) {
-        if (request.exhibitionId() != null) {
-            getMyExhibition(userId, request.exhibitionId());
-        }
-
-        return artworkRepository.searchArtworks(
-                        userId,
-                        normalize(request.keyword()),
-                        normalize(request.artistName()),
-                        normalize(request.productionYear()),
-                        normalize(request.medium()),
-                        request.exhibitionId()
-                )
-                .stream()
-                .map(ArtworkSimpleResponse::from)
-                .toList();
     }
 
     private String normalize(String value) {
