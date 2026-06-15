@@ -20,6 +20,7 @@ public enum SuccessCode {
     // User
     USER_INFO_SUCCESS(HttpStatus.OK, "회원 정보 조회가 완료되었습니다."),
     USER_UPDATE_SUCCESS(HttpStatus.OK, "회원 정보가 수정되었습니다."),
+    PASSWORD_UPDATE_SUCCESS(HttpStatus.OK, "비밀번호가 변경되었습니다."),
 
     // Exhibition
     EXHIBITION_CREATE_SUCCESS(HttpStatus.CREATED, "전시 기록이 등록되었습니다."),

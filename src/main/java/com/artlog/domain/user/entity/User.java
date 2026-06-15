@@ -19,28 +19,22 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 로그인에 사용할 이메일
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
-    // 암호화된 비밀번호
     @Column(nullable = false, length = 255)
     private String password;
 
-    // 서비스에서 사용할 닉네임
     @Column(nullable = false, unique = true, length = 30)
     private String nickname;
 
-    // USER / ADMIN
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role;
 
-    // 가입일
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    // 수정일
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -55,6 +49,14 @@ public class User {
         this.password = password;
         this.nickname = nickname;
         this.role = role;
+    }
+
+    public void updateNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
     }
 
     @PrePersist

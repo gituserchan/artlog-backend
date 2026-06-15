@@ -24,6 +24,8 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "USER_409_1", "이미 사용 중인 이메일입니다."),
     DUPLICATE_NICKNAME(HttpStatus.CONFLICT, "USER_409_2", "이미 사용 중인 닉네임입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER_404", "회원을 찾을 수 없습니다."),
+    INVALID_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_1", "현재 비밀번호가 올바르지 않습니다."),
+    SAME_AS_OLD_PASSWORD(HttpStatus.BAD_REQUEST, "USER_400_2", "새 비밀번호는 현재 비밀번호와 달라야 합니다."),
 
     // Exhibition
     EXHIBITION_NOT_FOUND(HttpStatus.NOT_FOUND, "EXHIBITION_404", "전시 기록을 찾을 수 없습니다."),
