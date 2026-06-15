@@ -37,6 +37,16 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     Optional<Review> findByIdAndUserId(Long reviewId, Long userId);
 
+    Page<Review> findAllByVisibility(
+            ReviewVisibility visibility,
+            Pageable pageable
+    );
+
+    Optional<Review> findByIdAndVisibility(
+            Long reviewId,
+            ReviewVisibility visibility
+    );
+
     @Query("""
             SELECT r
             FROM Review r

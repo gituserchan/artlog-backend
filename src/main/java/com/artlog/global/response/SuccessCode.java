@@ -50,6 +50,10 @@ public enum SuccessCode {
     RATING_DISTRIBUTION_SUCCESS(HttpStatus.OK, "평점 분포 통계 조회가 완료되었습니다."),
     TOP_EMOTION_TAGS_SUCCESS(HttpStatus.OK, "감정 태그 통계 조회가 완료되었습니다."),
 
+    // Public Review
+    PUBLIC_REVIEW_LIST_SUCCESS(HttpStatus.OK, "공개 감상 기록 목록 조회가 완료되었습니다."),
+    PUBLIC_REVIEW_DETAIL_SUCCESS(HttpStatus.OK, "공개 감상 기록 상세 조회가 완료되었습니다."),
+
     // File
     IMAGE_UPLOAD_SUCCESS(HttpStatus.CREATED, "이미지 업로드가 완료되었습니다.");
 
