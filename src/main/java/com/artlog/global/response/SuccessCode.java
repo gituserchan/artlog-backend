@@ -55,7 +55,14 @@ public enum SuccessCode {
     PUBLIC_REVIEW_DETAIL_SUCCESS(HttpStatus.OK, "공개 감상 기록 상세 조회가 완료되었습니다."),
 
     // File
-    IMAGE_UPLOAD_SUCCESS(HttpStatus.CREATED, "이미지 업로드가 완료되었습니다.");
+    IMAGE_UPLOAD_SUCCESS(HttpStatus.CREATED, "이미지 업로드가 완료되었습니다."),
+
+    // Review Reaction
+    REVIEW_LIKE_SUCCESS(HttpStatus.CREATED, "감상 기록 좋아요가 완료되었습니다."),
+    REVIEW_UNLIKE_SUCCESS(HttpStatus.OK, "감상 기록 좋아요가 취소되었습니다."),
+    REVIEW_BOOKMARK_SUCCESS(HttpStatus.CREATED, "감상 기록 북마크가 완료되었습니다."),
+    REVIEW_UNBOOKMARK_SUCCESS(HttpStatus.OK, "감상 기록 북마크가 취소되었습니다."),
+    REVIEW_BOOKMARK_LIST_SUCCESS(HttpStatus.OK, "북마크한 감상 기록 목록 조회가 완료되었습니다.");
 
     private final HttpStatus status;
     private final String message;
