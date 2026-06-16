@@ -18,10 +18,16 @@ public record PublicReviewSimpleResponse(
         String emotionTag,
         String keywords,
         String imageUrl,
+        long likeCount,
+        long bookmarkCount,
         LocalDateTime createdAt
 ) {
 
-    public static PublicReviewSimpleResponse from(Review review) {
+    public static PublicReviewSimpleResponse from(
+            Review review,
+            long likeCount,
+            long bookmarkCount
+    ) {
         return new PublicReviewSimpleResponse(
                 review.getId(),
                 review.getUser().getId(),
@@ -36,6 +42,8 @@ public record PublicReviewSimpleResponse(
                 review.getEmotionTag(),
                 review.getKeywords(),
                 review.getImageUrl(),
+                likeCount,
+                bookmarkCount,
                 review.getCreatedAt()
         );
     }

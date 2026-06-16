@@ -22,11 +22,17 @@ public record PublicReviewResponse(
         String keywords,
         Boolean wantToRevisit,
         String imageUrl,
+        long likeCount,
+        long bookmarkCount,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
 
-    public static PublicReviewResponse from(Review review) {
+    public static PublicReviewResponse from(
+            Review review,
+            long likeCount,
+            long bookmarkCount
+    ) {
         return new PublicReviewResponse(
                 review.getId(),
                 review.getUser().getId(),
@@ -45,6 +51,8 @@ public record PublicReviewResponse(
                 review.getKeywords(),
                 review.getWantToRevisit(),
                 review.getImageUrl(),
+                likeCount,
+                bookmarkCount,
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );
