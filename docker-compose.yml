@@ -1,0 +1,40 @@
+services:
+  mysql:
+    image: mysql:9.3
+    container_name: artlog-mysql
+    restart: always
+    env_file:
+      - .env.docker
+    environment:
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    volumes:
+      - artlog-mysql-data:/var/lib/mysql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p0000"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: artlog-app
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env.docker
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  artlog-mysql-data:

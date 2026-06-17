@@ -1,0 +1,10 @@
+.git
+.gradle
+build
+out
+.idea
+.env
+.env.docker
+uploads
+*.iml
+.DS_Store

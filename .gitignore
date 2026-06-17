@@ -23,6 +23,7 @@ bin/
 *.iml
 *.ipr
 *.env
+*.env.docker
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
@@ -36,3 +37,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### Uploads ###
+uploads/
+
+### macOS ###
+.DS_Store
