@@ -25,6 +25,8 @@ public record PublicReviewResponse(
         List<String> imageUrls,
         long likeCount,
         long bookmarkCount,
+        boolean likedByMe,
+        boolean bookmarkedByMe,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -32,7 +34,9 @@ public record PublicReviewResponse(
     public static PublicReviewResponse from(
             Review review,
             long likeCount,
-            long bookmarkCount
+            long bookmarkCount,
+            boolean likedByMe,
+            boolean bookmarkedByMe
     ) {
         return new PublicReviewResponse(
                 review.getId(),
@@ -54,6 +58,8 @@ public record PublicReviewResponse(
                 review.getImageUrls(),
                 likeCount,
                 bookmarkCount,
+                likedByMe,
+                bookmarkedByMe,
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );

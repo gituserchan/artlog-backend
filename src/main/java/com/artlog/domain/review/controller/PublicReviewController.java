@@ -6,6 +6,7 @@ import com.artlog.domain.review.service.PublicReviewService;
 import com.artlog.global.response.ApiResponse;
 import com.artlog.global.response.PageResponse;
 import com.artlog.global.response.SuccessCode;
+import com.artlog.global.security.user.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Public Review", description = "공개 감상 기록 API")
@@ -37,9 +39,15 @@ public class PublicReviewController {
     @Operation(summary = "공개 감상 기록 상세 조회", description = "공개 상태로 설정된 특정 감상 기록을 상세 조회합니다.")
     @GetMapping("/{reviewId}")
     public ApiResponse<PublicReviewResponse> getPublicReview(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long reviewId
     ) {
-        PublicReviewResponse response = publicReviewService.getPublicReview(reviewId);
+        Long userId = userDetails == null ? null : userDetails.getUserId();
+
+        PublicReviewResponse response = publicReviewService.getPublicReview(
+                reviewId,
+                userId
+        );
 
         return ApiResponse.success(SuccessCode.PUBLIC_REVIEW_DETAIL_SUCCESS, response);
     }
