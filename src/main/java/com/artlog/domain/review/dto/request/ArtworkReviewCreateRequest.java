@@ -6,6 +6,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.util.List;
+
 public record ArtworkReviewCreateRequest(
 
         @NotBlank(message = "감상 제목은 필수입니다.")
@@ -27,8 +29,8 @@ public record ArtworkReviewCreateRequest(
 
         Boolean wantToRevisit,
 
-        @Size(max = 500, message = "이미지 URL은 500자 이하로 입력해주세요.")
-        String imageUrl,
+        @Size(max = 10, message = "이미지는 최대 10장까지 등록할 수 있습니다.")
+        List<@Size(max = 500, message = "이미지 URL은 500자 이하로 입력해주세요.") String> imageUrls,
 
         ReviewVisibility visibility
 ) {
