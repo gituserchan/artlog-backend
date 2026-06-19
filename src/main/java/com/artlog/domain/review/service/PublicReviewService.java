@@ -39,7 +39,10 @@ public class PublicReviewService {
         return PageResponse.from(page);
     }
 
-    public PublicReviewResponse getPublicReview(Long reviewId) {
+    public PublicReviewResponse getPublicReview(
+            Long reviewId,
+            Long userId
+    ) {
         Review review = reviewRepository.findByIdAndVisibility(
                         reviewId,
                         ReviewVisibility.PUBLIC
@@ -49,10 +52,18 @@ public class PublicReviewService {
         long likeCount = reviewLikeRepository.countByReviewId(review.getId());
         long bookmarkCount = reviewBookmarkRepository.countByReviewId(review.getId());
 
+        boolean likedByMe = userId != null &&
+                reviewLikeRepository.existsByUserIdAndReviewId(userId, review.getId());
+
+        boolean bookmarkedByMe = userId != null &&
+                reviewBookmarkRepository.existsByUserIdAndReviewId(userId, review.getId());
+
         return PublicReviewResponse.from(
                 review,
                 likeCount,
-                bookmarkCount
+                bookmarkCount,
+                likedByMe,
+                bookmarkedByMe
         );
     }
 }
