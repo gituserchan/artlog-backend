@@ -42,6 +42,9 @@ public enum SuccessCode {
     REVIEW_DETAIL_SUCCESS(HttpStatus.OK, "감상 기록 상세 조회가 완료되었습니다."),
     REVIEW_UPDATE_SUCCESS(HttpStatus.OK, "감상 기록이 수정되었습니다."),
     REVIEW_DELETE_SUCCESS(HttpStatus.OK, "감상 기록이 삭제되었습니다."),
+    REVIEW_COMMENT_LIST_SUCCESS(HttpStatus.OK, "공개 감상 댓글 목록 조회에 성공했습니다."),
+    REVIEW_COMMENT_CREATE_SUCCESS(HttpStatus.CREATED, "공개 감상 댓글 작성에 성공했습니다."),
+    REVIEW_COMMENT_DELETE_SUCCESS(HttpStatus.OK, "공개 감상 댓글 삭제에 성공했습니다."),
 
     // Statistics
     STATISTICS_SUMMARY_SUCCESS(HttpStatus.OK, "통계 요약 조회가 완료되었습니다."),
