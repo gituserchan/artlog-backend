@@ -20,6 +20,8 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar app.jar
 
+RUN mkdir -p /app/uploads
+
 EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
