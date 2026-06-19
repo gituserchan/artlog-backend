@@ -3,6 +3,7 @@ package com.artlog.domain.review.dto.response;
 import com.artlog.domain.review.entity.Review;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record PublicReviewSimpleResponse(
         Long reviewId,
@@ -17,7 +18,7 @@ public record PublicReviewSimpleResponse(
         Integer rating,
         String emotionTag,
         String keywords,
-        String imageUrl,
+        List<String> imageUrls,
         long likeCount,
         long bookmarkCount,
         LocalDateTime createdAt
@@ -41,7 +42,7 @@ public record PublicReviewSimpleResponse(
                 review.getRating(),
                 review.getEmotionTag(),
                 review.getKeywords(),
-                review.getImageUrl(),
+                review.getImageUrls(),
                 likeCount,
                 bookmarkCount,
                 review.getCreatedAt()

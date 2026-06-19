@@ -3,6 +3,7 @@ package com.artlog.domain.review.reaction.dto.response;
 import com.artlog.domain.review.reaction.entity.ReviewBookmark;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ReviewBookmarkResponse(
         Long bookmarkId,
@@ -18,7 +19,7 @@ public record ReviewBookmarkResponse(
         Integer rating,
         String emotionTag,
         String keywords,
-        String imageUrl,
+        List<String> imageUrls,
         LocalDateTime bookmarkedAt
 ) {
 
@@ -37,7 +38,7 @@ public record ReviewBookmarkResponse(
                 bookmark.getReview().getRating(),
                 bookmark.getReview().getEmotionTag(),
                 bookmark.getReview().getKeywords(),
-                bookmark.getReview().getImageUrl(),
+                bookmark.getReview().getImageUrls(),
                 bookmark.getCreatedAt()
         );
     }

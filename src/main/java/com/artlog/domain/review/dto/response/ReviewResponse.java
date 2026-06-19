@@ -5,6 +5,7 @@ import com.artlog.domain.review.type.ReviewType;
 import com.artlog.domain.review.type.ReviewVisibility;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ReviewResponse(
         Long reviewId,
@@ -20,7 +21,7 @@ public record ReviewResponse(
         String emotionTag,
         String keywords,
         Boolean wantToRevisit,
-        String imageUrl,
+        List<String> imageUrls,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -40,7 +41,7 @@ public record ReviewResponse(
                 review.getEmotionTag(),
                 review.getKeywords(),
                 review.getWantToRevisit(),
-                review.getImageUrl(),
+                review.getImageUrls(),
                 review.getCreatedAt(),
                 review.getUpdatedAt()
         );

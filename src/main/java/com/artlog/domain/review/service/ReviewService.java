@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -58,7 +59,7 @@ public class ReviewService {
                 .emotionTag(request.emotionTag())
                 .keywords(request.keywords())
                 .wantToRevisit(getWantToRevisitOrDefault(request.wantToRevisit()))
-                .imageUrl(request.imageUrl())
+                .imageUrls(normalizeImageUrls(request.imageUrls()))
                 .build();
 
         Review savedReview = reviewRepository.save(review);
@@ -89,7 +90,7 @@ public class ReviewService {
                 .emotionTag(request.emotionTag())
                 .keywords(request.keywords())
                 .wantToRevisit(getWantToRevisitOrDefault(request.wantToRevisit()))
-                .imageUrl(request.imageUrl())
+                .imageUrls(normalizeImageUrls(request.imageUrls()))
                 .build();
 
         Review savedReview = reviewRepository.save(review);
@@ -180,7 +181,7 @@ public class ReviewService {
                 request.emotionTag(),
                 request.keywords(),
                 getWantToRevisitOrDefault(request.wantToRevisit()),
-                request.imageUrl()
+                normalizeImageUrls(request.imageUrls())
         );
 
         return ReviewResponse.from(review);
@@ -263,6 +264,18 @@ public class ReviewService {
         }
 
         return wantToRevisit;
+    }
+
+    private List<String> normalizeImageUrls(List<String> imageUrls) {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return List.of();
+        }
+
+        return imageUrls.stream()
+                .filter(imageUrl -> imageUrl != null && !imageUrl.isBlank())
+                .map(String::trim)
+                .distinct()
+                .toList();
     }
 
     private String normalize(String value) {

@@ -12,6 +12,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Entity
@@ -70,9 +72,10 @@ public class Review {
     @Column(nullable = false)
     private Boolean wantToRevisit;
 
-    // 대표 이미지 URL, 나중에 파일 업로드 붙일 예정
-    @Column(length = 500)
-    private String imageUrl;
+    // 감상 이미지 목록
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC")
+    private List<ReviewImage> images = new ArrayList<>();
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -93,7 +96,7 @@ public class Review {
             String emotionTag,
             String keywords,
             Boolean wantToRevisit,
-            String imageUrl
+            List<String> imageUrls
     ) {
         this.user = user;
         this.exhibition = exhibition;
@@ -106,7 +109,7 @@ public class Review {
         this.emotionTag = emotionTag;
         this.keywords = keywords;
         this.wantToRevisit = wantToRevisit;
-        this.imageUrl = imageUrl;
+        replaceImages(imageUrls);
     }
 
     public void update(
@@ -117,7 +120,7 @@ public class Review {
             String emotionTag,
             String keywords,
             Boolean wantToRevisit,
-            String imageUrl
+            List<String> imageUrls
     ) {
         this.visibility = visibility;
         this.title = title;
@@ -126,7 +129,46 @@ public class Review {
         this.emotionTag = emotionTag;
         this.keywords = keywords;
         this.wantToRevisit = wantToRevisit;
-        this.imageUrl = imageUrl;
+        replaceImages(imageUrls);
+    }
+
+    public void replaceImages(List<String> imageUrls) {
+        this.images.clear();
+
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            return;
+        }
+
+        int sortOrder = 0;
+
+        for (String imageUrl : imageUrls) {
+            if (imageUrl == null || imageUrl.isBlank()) {
+                continue;
+            }
+
+            ReviewImage reviewImage = ReviewImage.builder()
+                    .review(this)
+                    .imageUrl(imageUrl.trim())
+                    .sortOrder(sortOrder)
+                    .build();
+
+            this.images.add(reviewImage);
+            sortOrder++;
+        }
+    }
+
+    public List<String> getImageUrls() {
+        return this.images.stream()
+                .map(ReviewImage::getImageUrl)
+                .toList();
+    }
+
+    public String getRepresentativeImageUrl() {
+        if (this.images.isEmpty()) {
+            return null;
+        }
+
+        return this.images.get(0).getImageUrl();
     }
 
     @PrePersist
