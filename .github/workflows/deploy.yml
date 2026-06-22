@@ -1,0 +1,49 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy backend on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            set -e
+
+            echo "===== Move to backend repository ====="
+            cd ~/artlog/artlog-backend
+
+            echo "===== Pull latest backend code ====="
+            git checkout main
+            git pull origin main
+
+            echo "===== Move to deploy directory ====="
+            cd ~/artlog/artlog-deploy
+
+            echo "===== Build backend image ====="
+            docker compose build backend
+
+            echo "===== Restart backend container ====="
+            docker compose up -d backend
+
+            echo "===== Wait for backend startup ====="
+            sleep 25
+
+            echo "===== Check backend health ====="
+            curl -f http://localhost:8080/actuator/health
+
+            echo "===== Show container status ====="
+            docker compose ps
+
+            echo "===== Clean unused Docker images ====="
+            docker image prune -f
